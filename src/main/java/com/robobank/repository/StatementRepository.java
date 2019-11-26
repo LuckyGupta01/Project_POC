@@ -33,7 +33,7 @@ import com.robobank.domain.CustomerStatement;
 @Repository
 public class StatementRepository {
 	
-	private  List<CustomerStatement> statements = new ArrayList<>() ;
+	private  List<CustomerStatement> statements =null;
 	
 	public  List<CustomerStatement> initializeDataFromFile(Path statementsfilePath)
 	
@@ -42,6 +42,8 @@ public class StatementRepository {
 			BufferedReader br = new BufferedReader(new FileReader(statementsfilePath.toString()));
 			
 			String line =null;
+			
+			statements = new ArrayList<>();
 			
 			while((line=br.readLine())!=null)
 			{

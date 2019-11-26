@@ -5,7 +5,8 @@ public class StatementsExceptions extends RuntimeException {
 	
 	public StatementsExceptions()
 	{
-		super();
+		SUPOER
 	}
+	
 
 }
