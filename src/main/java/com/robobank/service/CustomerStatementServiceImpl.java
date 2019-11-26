@@ -10,12 +10,15 @@ import java.util.Map;
 
 import javax.validation.constraints.Size;
 
+import org.apache.tomcat.util.http.fileupload.InvalidFileNameException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.robobank.domain.CustomerStatement;
 import com.robobank.domain.FileDetails;
-import com.robobank.exceptions.StatementsExceptions;
+import com.robobank.exceptions.CustomerStatementException;
+import com.robobank.exceptions.InvalidFileFormatException;
 import com.robobank.repository.StatementRepository;
 
 @Service
@@ -25,6 +28,8 @@ public class CustomerStatementServiceImpl implements CustomerStatementService {
 	@Autowired
 	StatementRepository statementRepo = new StatementRepository();	
 	
+	@Value("${dir.path}")
+	String path;
 	
 	@Override
 	public List<CustomerStatement>  readFile(String fileName) {
@@ -35,26 +40,25 @@ public class CustomerStatementServiceImpl implements CustomerStatementService {
 		
 		if(filetype.equalsIgnoreCase("csv"))
 		{
-			records =readFileCSV(fileName);
-			//validateData();
-			//return failedRecords;
+			records =readFileCSV(fileName);			
 		}
 		else if (filetype.equalsIgnoreCase("xml"))
 		{
-			records =readFileXML(fileName);
+			records = readFileXML(fileName);
 			
 		}
 		else
 		{
-			throw new StatementsExceptions("Invalid File Type");
+			throw new InvalidFileFormatException("Invalid File Format");
 		}
+		
 		return records;
 	}
 	
 	private List<CustomerStatement>  readFileCSV(String fileName)
 	{
 		List<CustomerStatement> statements = new ArrayList<CustomerStatement>();
-		Path statementsfilePath = Paths.get("src/data/records.csv");
+		Path statementsfilePath = Paths.get(path+fileName);
 		statements = statementRepo.initializeDataFromFile(statementsfilePath);
 		return statements;
 	}
@@ -63,7 +67,7 @@ public class CustomerStatementServiceImpl implements CustomerStatementService {
 	private List<CustomerStatement>   readFileXML(String fileName)
 	{	
 		List<CustomerStatement> statements = new ArrayList<CustomerStatement>();
-		Path statementsfilePath = Paths.get("src/data/records.xml");		
+		Path statementsfilePath = Paths.get(path+fileName);		
 		try {
 			statements = statementRepo.initializeDataFile(statementsfilePath);
 		} catch (Exception e) {
@@ -82,7 +86,6 @@ public class CustomerStatementServiceImpl implements CustomerStatementService {
 			String details = "";
 			double value;
 			if(hm.containsKey(st.getReference())){	
-				//System.out.println(""+st.getReference());
 				 details = st.getReference() +"  "+st.getDescription();
 				 failedRecords.add(details);
 			}
@@ -101,7 +104,5 @@ public class CustomerStatementServiceImpl implements CustomerStatementService {
 		return failedRecords;
 			
 	}
-	
-	
 }
 

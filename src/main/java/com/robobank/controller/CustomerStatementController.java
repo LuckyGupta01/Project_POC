@@ -5,6 +5,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,27 +31,32 @@ import com.robobank.service.CustomerStatementServiceImpl;
 public class CustomerStatementController {
 	
 	
+	private static final Logger logger = LoggerFactory.getLogger(CustomerStatementController.class);
+
+	
 	@Autowired
 	CustomerStatementService customerStatementService;	
 	
 	@GetMapping("/inputfile/{fileName}")
 	public ResponseEntity<List<String>> fileDetails(@PathVariable ("fileName") String fileName) {	
+		logger.info("In fileDetails() CustomerStatementController ");
 		List<CustomerStatement> records = customerStatementService.readFile(fileName);
 		List<String> list = customerStatementService.validateData(records);
-		//records.clear();	
+		
 		return new ResponseEntity<>(list, HttpStatus.OK);
 	  }		
 	
 	
-	@RequestMapping(value="/upload" , method = RequestMethod.POST)
-	public ResponseEntity<Object> uploadFile(@RequestParam("file") MultipartFile file ) throws IOException
-	{
-		
-		File convertFile = new File("\\home\\buntu\\STS_Workspace\\Project_RoboBank\\src\\data"+file.getOriginalFilename());
-		convertFile.createNewFile();
-		FileOutputStream fout = new FileOutputStream(convertFile);
-		fout.write(file.getBytes());
-		fout.close();
-		return new ResponseEntity<>("File Uploaded Successfully",HttpStatus.OK);
-	}
+	/*
+	 * @RequestMapping(value="/upload" , method = RequestMethod.POST) public
+	 * ResponseEntity<Object> uploadFile(@RequestParam("file") MultipartFile file )
+	 * throws IOException {
+	 * 
+	 * File convertFile = new
+	 * File("\\home\\buntu\\STS_Workspace\\Project_RoboBank\\src\\data"+file.
+	 * getOriginalFilename()); convertFile.createNewFile(); FileOutputStream fout =
+	 * new FileOutputStream(convertFile); fout.write(file.getBytes()); fout.close();
+	 * return new ResponseEntity<>("File Uploaded Successfully",HttpStatus.OK); }
+	 */
+	
 }
