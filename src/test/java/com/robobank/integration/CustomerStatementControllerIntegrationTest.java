@@ -1,7 +1,8 @@
-package com.robobank.controller;
+package com.robobank.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,11 +14,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.robobank.domain.FileDetails;
+import com.robobank.domain.ReportData;
+import com.robobank.exceptions.InvalidFileFormatException;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class CustomerStatementControllerTest {
+public class CustomerStatementControllerIntegrationTest {
 
 	@LocalServerPort
 	int port;
@@ -39,7 +41,7 @@ public class CustomerStatementControllerTest {
 		fileName = "records.csv";
 		url ="http://localhost:" +port+"/api/v1/robobank/inputfile/"+fileName;
 		headers = new HttpHeaders();
-		ResponseEntity<FileDetails> responseUPdated = restTemplate.getForEntity(url, FileDetails.class);
+		ResponseEntity<ReportData> responseUPdated = restTemplate.getForEntity(url, ReportData.class);
 		assertThat(responseUPdated.getStatusCode()).isEqualTo(HttpStatus.OK);
 
 	}
@@ -47,11 +49,12 @@ public class CustomerStatementControllerTest {
 	@Test
 	public void customerStatementInvalidFileFormat() {
 
-		fileName = "records.txt";
 		url ="http://localhost:" +port+"/api/v1/robobank/inputfile/"+fileName;
 		headers = new HttpHeaders();
-		ResponseEntity<FileDetails> responseUPdated = restTemplate.getForEntity(url, FileDetails.class);
-		assertThat(responseUPdated.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-
+		try {
+			ResponseEntity<ReportData> responseUPdated = restTemplate.getForEntity(url, ReportData.class);
+		} catch (InvalidFileFormatException exception) {
+			Assert.assertEquals(exception.getMessage(), "Invalid File Format");
+		}
 	}
 }

@@ -1,65 +1,50 @@
 package com.robobank.service;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import javax.validation.constraints.Size;
-
-import org.apache.tomcat.util.http.fileupload.InvalidFileNameException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.robobank.domain.CustomerStatement;
-import com.robobank.domain.FileDetails;
-import com.robobank.exceptions.CustomerStatementException;
+import com.robobank.enums.FileType;
 import com.robobank.exceptions.InvalidFileFormatException;
 import com.robobank.repository.StatementRepository;
-import com.robobank.utility.Utility;
 
 @Service
 public class CustomerStatementServiceImpl implements CustomerStatementService {
 
-	
+	private static final Logger log = LoggerFactory.getLogger(CustomerStatementServiceImpl.class);
+
 	@Autowired
-	Utility utility;
-	
+	StatementRepository statementRepository;
+
 	@Override
-	public List<CustomerStatement>  readFile(String fileName) {
-		
-		String x[] =fileName.split("\\.");		
-		String filetype= x[1].toString();
+	public List<CustomerStatement> readFile(String fileName) {
+		log.info("In readFile() CustomerStatementServiceImpl ");
+		String x[] = fileName.split("\\.");
+		String filetype = x[1].toString();
 		List<CustomerStatement> records = new ArrayList<>();
-		
-		if(filetype.equalsIgnoreCase("csv"))
-		{
-			records =utility.readFileCSV(fileName);			
-		}
-		else if (filetype.equalsIgnoreCase("xml"))
-		{
-			records = utility.readFileXML(fileName);
-			
-		}
-		else
-		{
+
+		if (filetype.equalsIgnoreCase(FileType.CSV.getLabel())) {
+			records = statementRepository.readFileCSV(fileName);
+		} else if (filetype.equalsIgnoreCase(FileType.XML.getLabel())) {
+			records = statementRepository.readFileXML(fileName);
+
+		} else {
 			throw new InvalidFileFormatException("Invalid File Format");
 		}
-		
+
 		return records;
 	}
 
 	@Override
 	public List<String> validateData(List<CustomerStatement> records) {
-		
-		return utility.validateData(records);
-		
-	}
-	
-	
-}
 
+		return statementRepository.validateData(records);
+
+	}
+
+}

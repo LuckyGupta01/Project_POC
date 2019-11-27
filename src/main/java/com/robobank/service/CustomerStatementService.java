@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 
 import com.robobank.domain.CustomerStatement;
-import com.robobank.domain.FileDetails;
+import com.robobank.domain.ReportData;
 
 public interface CustomerStatementService {	
 	
