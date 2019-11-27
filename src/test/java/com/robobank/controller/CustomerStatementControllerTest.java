@@ -1,45 +1,57 @@
 package com.robobank.controller;
 
-
 import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.client.RestTemplate;
+
+import com.robobank.domain.FileDetails;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class CustomerStatementControllerTest {
 
+	@LocalServerPort
+	int port;
 
+	private String fileName;
+	private String url;
+	private TestRestTemplate restTemplate;
+	HttpHeaders headers;
 
-@MockBean
-RestTemplate restTemplate;
+	@Before
+	public void settup() {
 
-String fileName;
+		restTemplate = new TestRestTemplate();
+	}
 
-@Before
-public void settup()
-{
-	fileName = "records.csv";
-}
-	
+	@Test
+	public void customerStatementTest() {
 
-@Test
-public void customerStatementTest() {
-	
-	ResponseEntity responseUPdated = restTemplate.getForEntity("/api/v1/robobank/inputfile/records.csv",ResponseEntity.class); 
-	assertThat(responseUPdated).isEqualTo(HttpStatus.OK);
+		fileName = "records.csv";
+		url ="http://localhost:" +port+"/api/v1/robobank/inputfile/"+fileName;
+		headers = new HttpHeaders();
+		ResponseEntity<FileDetails> responseUPdated = restTemplate.getForEntity(url, FileDetails.class);
+		assertThat(responseUPdated.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-	
-}
+	}
+
+	@Test
+	public void customerStatementInvalidFileFormat() {
+
+		fileName = "records.txt";
+		url ="http://localhost:" +port+"/api/v1/robobank/inputfile/"+fileName;
+		headers = new HttpHeaders();
+		ResponseEntity<FileDetails> responseUPdated = restTemplate.getForEntity(url, FileDetails.class);
+		assertThat(responseUPdated.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+
+	}
 }

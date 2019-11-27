@@ -20,16 +20,14 @@ import com.robobank.domain.FileDetails;
 import com.robobank.exceptions.CustomerStatementException;
 import com.robobank.exceptions.InvalidFileFormatException;
 import com.robobank.repository.StatementRepository;
+import com.robobank.utility.Utility;
 
 @Service
 public class CustomerStatementServiceImpl implements CustomerStatementService {
 
 	
 	@Autowired
-	StatementRepository statementRepo = new StatementRepository();	
-	
-	@Value("${dir.path}")
-	String path;
+	Utility utility;
 	
 	@Override
 	public List<CustomerStatement>  readFile(String fileName) {
@@ -40,11 +38,11 @@ public class CustomerStatementServiceImpl implements CustomerStatementService {
 		
 		if(filetype.equalsIgnoreCase("csv"))
 		{
-			records =readFileCSV(fileName);			
+			records =utility.readFileCSV(fileName);			
 		}
 		else if (filetype.equalsIgnoreCase("xml"))
 		{
-			records = readFileXML(fileName);
+			records = utility.readFileXML(fileName);
 			
 		}
 		else
@@ -54,55 +52,14 @@ public class CustomerStatementServiceImpl implements CustomerStatementService {
 		
 		return records;
 	}
-	
-	private List<CustomerStatement>  readFileCSV(String fileName)
-	{
-		List<CustomerStatement> statements = new ArrayList<CustomerStatement>();
-		Path statementsfilePath = Paths.get(path+fileName);
-		statements = statementRepo.initializeDataFromFile(statementsfilePath);
-		return statements;
-	}
-	
-	
-	private List<CustomerStatement>   readFileXML(String fileName)
-	{	
-		List<CustomerStatement> statements = new ArrayList<CustomerStatement>();
-		Path statementsfilePath = Paths.get(path+fileName);		
-		try {
-			statements = statementRepo.initializeDataFile(statementsfilePath);
-		} catch (Exception e) {
-			
-			e.printStackTrace();
-		}
-		return statements;
-	}
+
 	@Override
-	public List<String> validateData(List<CustomerStatement> statements) {
-		List<String> failedRecords = new ArrayList<>() ; 
-		HashMap<Integer, CustomerStatement> hm = new HashMap<Integer, CustomerStatement>();			
-		DecimalFormat decimalFormatter = new DecimalFormat("0.00");		
-		for(CustomerStatement st : statements)
-		{
-			String details = "";
-			double value;
-			if(hm.containsKey(st.getReference())){	
-				 details = st.getReference() +"  "+st.getDescription();
-				 failedRecords.add(details);
-			}
-			else {
-					value =Double.parseDouble(decimalFormatter.format((st.getStart_Balance() + st.getMutation())));	
-					if(st.getEnd_Balance() != value){
-						 details = st.getReference() +"  "+st.getDescription();
-						 failedRecords.add(details);
-					}				
-					else {
-					hm.put(st.getReference(), st); 
-				}
-			}		
-			
-		}		
-		return failedRecords;
-			
+	public List<String> validateData(List<CustomerStatement> records) {
+		
+		return utility.validateData(records);
+		
 	}
+	
+	
 }
 

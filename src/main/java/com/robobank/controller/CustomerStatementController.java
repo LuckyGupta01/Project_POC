@@ -1,5 +1,7 @@
 package com.robobank.controller;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -33,17 +35,20 @@ public class CustomerStatementController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(CustomerStatementController.class);
 
+	@Autowired
+	FileDetails fileDetails;
 	
 	@Autowired
 	CustomerStatementService customerStatementService;	
 	
 	@GetMapping("/inputfile/{fileName}")
-	public ResponseEntity<List<String>> fileDetails(@PathVariable ("fileName") String fileName) {	
+	public ResponseEntity<FileDetails> fileDetails(@PathVariable ("fileName") String fileName) {	
 		logger.info("In fileDetails() CustomerStatementController ");
 		List<CustomerStatement> records = customerStatementService.readFile(fileName);
 		List<String> list = customerStatementService.validateData(records);
 		
-		return new ResponseEntity<>(list, HttpStatus.OK);
+		fileDetails.setRecords(list);
+		return new ResponseEntity<FileDetails>(fileDetails,HttpStatus.OK);
 	  }		
 	
 	
